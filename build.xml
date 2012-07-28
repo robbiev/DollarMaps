@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+
+<project name="DollarMaps" default="compile" basedir=".">
+
+  <import file="common.xml" />
+
+  <path id="compile.classpath">
+    <fileset dir="${lib.dir}" includes="*.jar"/>
+  	<fileset dir="${lib.dir}/build" includes="*.jar"/>
+  </path>
+
+  <target name="jar" depends="compile"
+       description="Build jar.">
+    <mkdir dir="${build.dir}/dist"/>
+    <jar jarfile="${build.dir}/dist/DollarMaps-${version}.jar">
+      <fileset dir="${build.dir}/classes"/>
+    </jar>
+  </target>
+
+  <target name="dist" depends="jar, javadoc"
+       description="Build entire distribution.">
+    <copy toDir="${build.dir}/dist" file="COPYING"/> 
+    <copy toDir="${build.dir}/dist"> 
+      <fileset dir="${lib.dir}" 
+        includes="*.jar"/>
+    </copy>
+    <copy toDir="${build.dir}/dist"> 
+      <fileset dir="${build.dir}" includes="javadoc/**/*"/>
+    </copy>
+
+    <zip destfile="${build.dir}/DollarMaps-${version}.zip"
+      basedir="${build.dir}/dist"/>
+    <zip destfile="${build.dir}/DollarMaps-${version}-src.zip"
+      basedir="." 
+      excludes="build/**/*,build,.svn,.svn/**/*,**/.svn,classes,classes/**/*"/>
+  </target>
+  
+  <target name="test.dist"
+      depends="jar, test.compile"
+      description="Execute JUnit tests against distribution jar.">
+    <java fork="true" 
+        classname="org.junit.runner.JUnitCore"
+        failonerror="true"
+        taskname="junit">
+      <classpath>
+        <pathelement location="${build.dir}/test"/>
+        <pathelement location="${build.dir}/dist/DollarMaps-${version}.jar"/>
+        <pathelement location="lib/build/junit.jar"/>
+      </classpath>
+      <arg value="org.garbagecollected.util.DollarMapsTest"/>    
+    </java>
+  </target>
+  
+  <target name="javadoc"
+      description="Generate Javadocs.">
+    <mkdir dir="${build.dir}/javadoc"/>
+    <javadoc packagenames="${javadoc.packagenames}"
+         destdir="${build.dir}/javadoc"
+         author="false"
+         protected="true"
+         windowtitle="DollarMaps ${version} API">
+      <sourcepath>
+        <pathelement location="${src.dir}"/>
+      </sourcepath>
+      <classpath refid="compile.classpath"/>
+      <link href="http://java.sun.com/javase/6/docs/api"/>
+    </javadoc>
+  </target>
+
+  <target name="clean.all"
+      depends="clean"
+      description="Remove generated files.">
+  </target>
+  
+</project>
